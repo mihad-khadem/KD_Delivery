@@ -12,7 +12,7 @@ export default function Footer() {
         </p>
 
         <p className="text-sm text-stone-500">
-          © {new Date().getFullYear()} KD Delivery
+          ©  Kacchi Dine Delivery 2026. All rights reserved.
         </p>
       </div>
     </footer>
