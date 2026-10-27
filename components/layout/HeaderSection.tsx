@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useState } from "react";
@@ -10,8 +9,8 @@ import CartDrawer from "@/components/cart/CartDrawer";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Our Menu", href: "/menu" },
-  { label: "About Us", href: "/#about" },
-  { label: "Contact", href: "/#contact" },
+  { label: "About Us", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
