@@ -23,7 +23,7 @@ export default function HeroSection() {
           authentic flavors, and convenient delivery right to your home.
         </p>
 
-        <div className="mt-8 flex flex-wrap gap-4">
+        <div className="mt-8 flex flex-wrap gap-4"> 
           <a
             href="#menu"
             className="rounded-full bg-orange-600 px-7 py-4 font-bold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-1 hover:bg-orange-700"
