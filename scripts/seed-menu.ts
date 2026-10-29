@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { Types } from "mongoose";
 
 dotenv.config({ path: ".env.local" });
 
@@ -15,7 +16,7 @@ async function seedMenu() {
     console.log("Connected to MongoDB.");
     console.log("Seeding categories...");
 
-    const categoryIds = new Map<string, mongoose.Types.ObjectId>();
+    const categoryIds: Types.ObjectId[] = [];
 
     for (const [index, name] of categories.entries()) {
       const slug = name

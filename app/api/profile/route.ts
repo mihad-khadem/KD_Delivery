@@ -1,9 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { Types } from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
-async function getUserId(request: NextRequest) {
+type AddressResponse = {
+  _id: string;
+  label: string;
+  address: string;
+  area: string;
+  city: string;
+  phone: string;
+};
+
+type ProfileResponse = {
+  id: string;
+  name: string;
+  phone: string;
+  addresses: AddressResponse[];
+};
+
+type ApiErrorResponse = {
+  message: string;
+};
+
+type UpdateProfileBody = {
+  name?: unknown;
+  phone?: unknown;
+};
+
+type LeanAddress = {
+  _id: Types.ObjectId;
+  label: string;
+  address: string;
+  area: string;
+  city: string;
+  phone: string;
+};
+
+function toAddressResponse(item: LeanAddress): AddressResponse {
+  return {
+    _id: item._id.toString(),
+    label: item.label,
+    address: item.address,
+    area: item.area,
+    city: item.city,
+    phone: item.phone,
+  };
+}
+
+function errorResponse(message: string, status: number) {
+  return NextResponse.json<ApiErrorResponse>({ message }, { status });
+}
+
+async function getUserId(request: NextRequest): Promise<string | null> {
   const token = request.cookies.get("kd_session")?.value;
   const secret = process.env.JWT_SECRET;
 
@@ -14,10 +64,28 @@ async function getUserId(request: NextRequest) {
       token,
       new TextEncoder().encode(secret),
     );
-    return payload.sub || null;
+
+    // Supports the subject claim used by your existing profile API.
+    const id = payload.sub;
+
+    return typeof id === "string" && Types.ObjectId.isValid(id) ? id : null;
   } catch {
     return null;
   }
+}
+
+function toProfileResponse(user: {
+  _id: Types.ObjectId;
+  name: string;
+  phone: string;
+  addresses: LeanAddress[];
+}): ProfileResponse {
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    phone: user.phone,
+    addresses: user.addresses.map(toAddressResponse),
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -25,7 +93,7 @@ export async function GET(request: NextRequest) {
     const userId = await getUserId(request);
 
     if (!userId) {
-      return NextResponse.json({ message: "Please sign in." }, { status: 401 });
+      return errorResponse("Please sign in.", 401);
     }
 
     await connectDB();
@@ -35,35 +103,30 @@ export async function GET(request: NextRequest) {
       .lean();
 
     if (!user || !user.isActive) {
-      return NextResponse.json(
-        { message: "Account not found." },
-        { status: 404 },
-      );
+      return errorResponse("Account not found.", 404);
     }
 
+    const profile = toProfileResponse({
+      _id: user._id,
+      name: user.name,
+      phone: user.phone,
+      addresses: user.addresses.map((item: LeanAddress) => ({
+        _id: item._id,
+        label: item.label,
+        address: item.address,
+        area: item.area,
+        city: item.city,
+        phone: item.phone,
+      })),
+    });
+
     return NextResponse.json(
-      {
-        profile: {
-          id: user._id.toString(),
-          name: user.name,
-          phone: user.phone,
-          addresses: user.addresses.map((item) => ({
-            _id: item._id.toString(),
-            label: item.label,
-            address: item.address,
-            area: item.area,
-            city: item.city,
-            phone: item.phone,
-          })),
-        },
-      },
+      { profile },
       { headers: { "Cache-Control": "no-store" } },
     );
-  } catch {
-    return NextResponse.json(
-      { message: "Could not load your profile." },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    console.error("GET /api/profile:", error);
+    return errorResponse("Could not load your profile.", 500);
   }
 }
 
@@ -72,26 +135,27 @@ export async function PATCH(request: NextRequest) {
     const userId = await getUserId(request);
 
     if (!userId) {
-      return NextResponse.json({ message: "Please sign in." }, { status: 401 });
+      return errorResponse("Please sign in.", 401);
     }
 
-    const body = await request.json();
+    let body: UpdateProfileBody;
+
+    try {
+      body = (await request.json()) as UpdateProfileBody;
+    } catch {
+      return errorResponse("Invalid JSON request body.", 400);
+    }
+
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone =
       typeof body.phone === "string" ? body.phone.replace(/[\s()-]/g, "") : "";
 
     if (name.length < 2 || name.length > 80) {
-      return NextResponse.json(
-        { message: "Name must be between 2 and 80 characters." },
-        { status: 400 },
-      );
+      return errorResponse("Name must be between 2 and 80 characters.", 400);
     }
 
     if (!/^\+?[0-9]{10,15}$/.test(phone)) {
-      return NextResponse.json(
-        { message: "Enter a valid phone number." },
-        { status: 400 },
-      );
+      return errorResponse("Enter a valid phone number.", 400);
     }
 
     await connectDB();
@@ -104,10 +168,7 @@ export async function PATCH(request: NextRequest) {
       .lean();
 
     if (duplicate) {
-      return NextResponse.json(
-        { message: "That phone number is already registered." },
-        { status: 409 },
-      );
+      return errorResponse("That phone number is already registered.", 409);
     }
 
     const user = await User.findByIdAndUpdate(
@@ -117,27 +178,27 @@ export async function PATCH(request: NextRequest) {
     ).select("name phone addresses isActive");
 
     if (!user || !user.isActive) {
-      return NextResponse.json(
-        { message: "Account not found." },
-        { status: 404 },
-      );
+      return errorResponse("Account not found.", 404);
     }
 
-    return NextResponse.json({
-      profile: {
-        id: user._id.toString(),
-        name: user.name,
-        phone: user.phone,
-        addresses: user.addresses.map((item) => ({
-          _id: item._id.toString(),
-          label: item.label,
-          address: item.address,
-          area: item.area,
-          city: item.city,
-          phone: item.phone,
-        })),
-      },
+    const profile = toProfileResponse({
+      _id: user._id,
+      name: user.name,
+      phone: user.phone,
+      addresses: user.addresses.map((item: LeanAddress) => ({
+        _id: item._id,
+        label: item.label,
+        address: item.address,
+        area: item.area,
+        city: item.city,
+        phone: item.phone,
+      })),
     });
+
+    return NextResponse.json(
+      { profile },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error: unknown) {
     if (
       typeof error === "object" &&
@@ -145,15 +206,10 @@ export async function PATCH(request: NextRequest) {
       "code" in error &&
       error.code === 11000
     ) {
-      return NextResponse.json(
-        { message: "That phone number is already registered." },
-        { status: 409 },
-      );
+      return errorResponse("That phone number is already registered.", 409);
     }
 
-    return NextResponse.json(
-      { message: "Could not update your profile." },
-      { status: 500 },
-    );
+    console.error("PATCH /api/profile:", error);
+    return errorResponse("Could not update your profile.", 500);
   }
 }

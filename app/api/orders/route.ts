@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { connectDB } from "@/lib/mongodb";
-import UserModel from "@/models/User";
-import OrderModel from "@/models/Order";
-
+import User from "@/models/User";
+import Order from "@/models/Order";
+// Order route
 async function getUserId(request: NextRequest): Promise<string | null> {
   const token = request.cookies.get("kd_session")?.value;
   const secret = process.env.JWT_SECRET;
@@ -16,9 +16,7 @@ async function getUserId(request: NextRequest): Promise<string | null> {
       new TextEncoder().encode(secret),
     );
 
-    if (typeof payload.userId !== "string") return null;
-
-    return payload.userId;
+    return typeof payload.userId === "string" ? payload.userId : null;
   } catch {
     return null;
   }
@@ -31,16 +29,13 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { message: "Please log in to view your orders." },
-        {
-          status: 401,
-          headers: { "Cache-Control": "no-store" },
-        },
+        { status: 401 },
       );
     }
 
     await connectDB();
 
-    const user = await UserModel.findById(userId).select("_id isActive").lean();
+    const user = await User.findById(userId).select("_id isActive").lean();
 
     if (!user || !user.isActive) {
       return NextResponse.json(
@@ -49,22 +44,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const orders = await OrderModel.find({ userId: user._id })
+    const orders = await Order.find({ customer: user._id })
       .select(
-        "orderNumber items total status paymentMethod paymentStatus createdAt",
+        "orderNumber items orderType deliveryAddress deliveryArea paymentMethod paymentStatus orderStatus subtotal deliveryFee discount total createdAt",
       )
       .sort({ createdAt: -1 })
       .lean();
 
     return NextResponse.json(
       { orders },
-      { headers: { "Cache-Control": "no-store" } },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   } catch (error) {
-    console.error("GET /api/orders error:", error);
+    console.error("GET /api/orders:", error);
 
     return NextResponse.json(
-      { message: "Could not load your orders." },
+      { message: "Failed to load your orders." },
       { status: 500 },
     );
   }

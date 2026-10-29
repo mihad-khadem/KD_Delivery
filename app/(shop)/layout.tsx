@@ -1,9 +1,7 @@
-
-
 import type { ReactNode } from "react";
 import Header from "@/components/layout/HeaderSection";
 import Footer from "@/components/layout/Footer";
-
+import { Analytics } from "@vercel/analytics/next";
 type ShopLayoutProps = {
   children: ReactNode;
 };
@@ -15,6 +13,7 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
 
       <main className="min-h-screen">
         {children}
+        <Analytics />
       </main>
 
       <Footer />

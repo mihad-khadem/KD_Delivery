@@ -1,4 +1,4 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model, models, type InferSchemaType } from "mongoose";
 
 const orderItemSchema = new Schema(
   {
@@ -82,7 +82,7 @@ const orderSchema = new Schema(
       type: [orderItemSchema],
       required: true,
       validate: {
-        validator: (items: unknown[]) => items.length > 0,
+        validator: (items: OrderItem[]) => items.length > 0,
         message: "An order must contain at least one item.",
       },
     },
@@ -169,6 +169,9 @@ const orderSchema = new Schema(
 orderSchema.index({ orderStatus: 1, createdAt: -1 });
 orderSchema.index({ customerPhone: 1, createdAt: -1 });
 orderSchema.index({ rider: 1, orderStatus: 1 });
+
+export type OrderItem = InferSchemaType<typeof orderItemSchema>;
+export type OrderDocument = InferSchemaType<typeof orderSchema>;
 
 const Order = models.Order || model("Order", orderSchema);
 
