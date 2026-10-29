@@ -1,10 +1,9 @@
 import dotenv from "dotenv";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 dotenv.config({ path: ".env.local" });
 
-async function seedMenu() {
-  const mongoose = await import("mongoose");
+async function seedMenu(): Promise<void> {
   const { connectDB } = await import("../lib/mongodb");
   const { menuItems, categories } = await import("../public/data/menu");
   const Category = (await import("../models/Category")).default;
@@ -16,7 +15,8 @@ async function seedMenu() {
     console.log("Connected to MongoDB.");
     console.log("Seeding categories...");
 
-    const categoryIds: Types.ObjectId[] = [];
+    // Store category names and MongoDB ObjectIds as key-value pairs.
+    const categoryIds = new Map<string, Types.ObjectId>();
 
     for (const [index, name] of categories.entries()) {
       const slug = name
@@ -96,7 +96,7 @@ async function seedMenu() {
 
     console.log(`Successfully seeded ${menuItems.length} products.`);
     console.log("Menu seeding completed!");
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Menu seeding failed:", error);
     process.exitCode = 1;
   } finally {
