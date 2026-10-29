@@ -52,7 +52,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-[#fffaf3] px-4 py-10">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-orange-950/5 ring-1 ring-orange-100 md:grid-cols-2">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-4xl bg-white shadow-xl shadow-orange-950/5 ring-1 ring-orange-100 md:grid-cols-2">
         <section className="relative hidden flex-col justify-between overflow-hidden bg-[#2b211b] p-10 text-white md:flex lg:p-14">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/20 blur-3xl" />
           <Link
