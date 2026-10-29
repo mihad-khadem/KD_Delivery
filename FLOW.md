@@ -41,19 +41,19 @@
 
 ## Technology Stack
 
-| Technology | Purpose |
-|---|---|
-| Next.js App Router | Pages, layouts, and routing |
-| React | User interfaces and reusable components |
-| TypeScript | Type-safe application development |
-| Tailwind CSS | Responsive styling |
-| MongoDB | Database |
-| Next.js Route Handlers | Backend API endpoints |
-| Authentication | Secure access for admins and riders |
+| Technology             | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| Next.js App Router     | Pages, layouts, and routing             |
+| React                  | User interfaces and reusable components |
+| TypeScript             | Type-safe application development       |
+| Tailwind CSS           | Responsive styling                      |
+| MongoDB                | Database                                |
+| Next.js Route Handlers | Backend API endpoints                   |
+| Authentication         | Secure access for admins and riders     |
 
 ## Project Structure
 
-``` text
+```text
 kd_delivery/
 ├── app/
 │   ├── (shop)/
@@ -134,49 +134,49 @@ kd_delivery/
 └── README.md
 ```
 
-*Note: This is the planned project structure. Some files and features may need to be created as development progresses.*
+_Note: This is the planned project structure. Some files and features may need to be created as development progresses._
 
 ## Application Routes
 
 ### Customer
 
-| Route | Description |
-|---|---|
-| `/` | Customer homepage |
-| `/menu` | Food menu |
-| `/cart` | Shopping cart |
-| `/checkout` | Checkout and order placement |
-| `/orders/[id]` | View an individual order |
+| Route          | Description                  |
+| -------------- | ---------------------------- |
+| `/`            | Customer homepage            |
+| `/menu`        | Food menu                    |
+| `/cart`        | Shopping cart                |
+| `/checkout`    | Checkout and order placement |
+| `/orders/[id]` | View an individual order     |
 
 ### Admin
 
-| Route | Description |
-|---|---|
-| `/admin/login` | Admin login |
-| `/admin` | Admin dashboard |
-| `/admin/orders` | Order management |
-| `/admin/products` | Product management |
-| `/admin/categories` | Category management |
-| `/admin/riders` | Rider management |
+| Route                   | Description              |
+| ----------------------- | ------------------------ |
+| `/admin/login`          | Admin login              |
+| `/admin`                | Admin dashboard          |
+| `/admin/orders`         | Order management         |
+| `/admin/products`       | Product management       |
+| `/admin/categories`     | Category management      |
+| `/admin/riders`         | Rider management         |
 | `/admin/delivery-zones` | Delivery zone management |
 
 ### Rider
 
-| Route | Description |
-|---|---|
-| `/rider/login` | Rider login |
-| `/rider` | Rider dashboard |
+| Route               | Description         |
+| ------------------- | ------------------- |
+| `/rider/login`      | Rider login         |
+| `/rider`            | Rider dashboard     |
 | `/rider/deliveries` | Assigned deliveries |
 
 ### API
 
-| Endpoint | Purpose |
-|---|---|
-| `/api/products` | Retrieve and manage products |
-| `/api/orders` | Create and manage orders |
-| `/api/admin/...` | Admin-specific operations |
-| `/api/rider/...` | Rider-specific operations |
-| `/api/payments/...` | Payment-related operations |
+| Endpoint            | Purpose                      |
+| ------------------- | ---------------------------- |
+| `/api/products`     | Retrieve and manage products |
+| `/api/orders`       | Create and manage orders     |
+| `/api/admin/...`    | Admin-specific operations    |
+| `/api/rider/...`    | Rider-specific operations    |
+| `/api/payments/...` | Payment-related operations   |
 
 API methods and nested endpoints will be defined as the backend is implemented.
 
